@@ -1,6 +1,7 @@
 name: electron-bridge-mapper
 description: JSHook workflow for electron-bridge-mapper
 author: vmoranv
+source_repo: https://github.com/vmoranv/jshook_workflow_electron_bridge_mapper
 tags:
   - workflow
   - electron-bridge-mapper
