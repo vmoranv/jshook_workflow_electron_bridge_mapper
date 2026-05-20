@@ -1,13 +1,14 @@
 import {
-  createWorkflow,
+  defineWorkflow,
+  sequenceStep,
   type WorkflowExecutionContext,
-  SequenceNodeBuilder,
 } from '@jshookmcp/extension-sdk/workflow';
 
 const workflowId = 'workflow.electron-bridge-mapper.v1';
 
-export default createWorkflow(workflowId, 'Electron Bridge Mapper')
-  .description(
+export default defineWorkflow(workflowId, 'Electron Bridge Mapper', (workflow) =>
+  workflow
+.description(
     'Maps Electron/NW.js application internals: inspects app structure, checks Electron fuses, sniffs IPC channels, scans preload scripts for bridge APIs, extracts ASAR contents, and identifies exposed Node.js APIs — producing a bridge surface map for exploit analysis.',
   )
   .tags(['reverse', 'electron', 'bridge', 'ipc', 'preload', 'asar', 'nwjs', 'mission'])
@@ -20,7 +21,7 @@ export default createWorkflow(workflowId, 'Electron Bridge Mapper')
     const sniffDuration = Number(ctx.getConfig(`${prefix}.sniffDurationMs`, 5000));
     const extractAsar = Boolean(ctx.getConfig(`${prefix}.extractAsar`, true));
 
-    const root = new SequenceNodeBuilder('electron-bridge-mapper-root');
+    return sequenceStep('electron-bridge-mapper-root', (root) => {
 
     // Phase 1: Electron App Inspection
     root
@@ -111,7 +112,7 @@ export default createWorkflow(workflowId, 'Electron Bridge Mapper')
         },
       });
 
-    return root;
+    });
   })
   .onStart((ctx) => {
     ctx.emitMetric('workflow_runs_total', 1, 'counter', { workflowId, mission: 'electron_bridge_mapper', stage: 'start' });
@@ -122,4 +123,4 @@ export default createWorkflow(workflowId, 'Electron Bridge Mapper')
   .onError((ctx, error) => {
     ctx.emitMetric('workflow_errors_total', 1, 'counter', { workflowId, mission: 'electron_bridge_mapper', stage: 'error', error: error.name });
   })
-  .build();
+  );
